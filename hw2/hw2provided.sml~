@@ -1,0 +1,43 @@
+(* Dan Grossman, Coursera PL, HW2 Provided Code *)
+
+(* if you use this function to compare two strings (returns true if the same
+   string), then you avoid several of the functions in problem 1 having
+   polymorphic types that may be confusing *)
+fun same_string(s1 : string, s2 : string) =
+    s1 = s2
+
+(* put your solutions for problem 1 here *)
+fun all_except_option (str_pattern : string, str_list : string list) = 
+    let fun iter_str_list (cur_list, acc) = 
+	    case cur_list of
+		[] => acc  
+	      | first_str::rest_str => 
+		if same_string (str_pattern,first_str) 
+		then iter_str_list (rest_str, acc)  (*leaving out the strings matching str_pattern *)
+		else iter_str_list (rest_str, acc @ [first_str])  (*append the strings that are different from str_pattern *)
+    in
+	if length str_list = length (iter_str_list (str_list,[]))
+	then NONE
+	else SOME (iter_str_list (str_list,[])) 
+    end
+
+(* you may assume that Num is always used with values 2, 3, ..., 10
+   though it will not really come up *)
+datatype suit = Clubs | Diamonds | Hearts | Spades
+datatype rank = Jack | Queen | King | Ace | Num of int 
+type card = suit * rank
+
+datatype color = Red | Black
+datatype move = Discard of card | Draw 
+
+exception IllegalMove
+
+(* put your solutions for problem 2 here *)
+
+
+val t_all_except_option = all_except_option("string", ["string"])
+val t_all_except_option2 = all_except_option("str", ["string"])
+val t_all_except_option3 = all_except_option("string", [])
+val t_all_except_option4 = all_except_option("meme", ["string","meme","bob","joe"])
+val t_all_except_option5 = all_except_option("", ["string","meme","","goe"])
+
