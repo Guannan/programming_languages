@@ -1,0 +1,26 @@
+
+use "hw1.sml";
+
+val t_is_older = is_older ((1,2,3),(2,3,4))
+val t_number_in_month = number_in_month ([(2012,2,28),(2013,12,1)],2)
+val t_number_in_months = number_in_months ([(2012,2,28),(2013,12,1),(2011,3,31),(2011,4,28)],[2,3,4])
+val t_dates_in_month = dates_in_month ([(2012,2,28),(2013,12,1)],2)
+val t_dates_in_months = dates_in_months ([(2012,2,28),(2013,12,1),(2011,3,31),(2011,4,28)],[2,3,4])
+val t_get_nth = get_nth (["hi", "there", "how", "are", "you"], 2)
+val t_date_to_string = date_to_string ((2013, 6, 1))
+val t_number_before_reaching_sum = number_before_reaching_sum (15, [1,2,3,4,5])
+val t_what_month = what_month (121)
+val t_month_range = month_range (31,34)
+val t_oldest = oldest ([(2012,2,28),(2011,3,31),(2011,4,28)])
+val t_oldest2 = oldest ([(10,10,13),(11,2,10),(13,1,1)])
+val t_reasonable_date = reasonable_date((1,1,1))
+val t_reasonable_date2 = reasonable_date((2000,2,28))
+val t_reasonable_date3 = reasonable_date((2000,2,29))
+val t_reasonable_date4 = reasonable_date((2004,2,29))
+val t_reasonable_date = reasonable_date((2100,2,29))
+val dup_removed = remove_duplicates_main ([1,1,2,2,3,4,5])
+val dup_remove2 = remove_duplicates_main ([2,3,5,2,2,1,3])
+val t_get_last = get_last ([1,2,3,4,5])
+val t_number_in_months_challenge = number_in_months_challenge ([(2012,2,28),(2013,12,1),(2011,3,31),(2011,4,28)],[2,3,2,4,4,3])
+val t_dates_in_months_challenge = dates_in_months_challenge ([(2012,2,28),(2013,12,1),(2011,3,31),(2011,4,28)],[1,2,1,3,4,9,3,5,3,3,2])
+
