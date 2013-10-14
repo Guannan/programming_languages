@@ -1,0 +1,10 @@
+
+emacs commands
+
+ctrl + x , ctrl + f   "opens file or create it"
+ctrl + x , ctrl + c  "close emacs"
+
+ctrl + c, ctrl + s  "opens sml interactive mode"
+ctrl + space        "marker set for selection"
+alt + w             "copy"
+ctrl + y            "paste"
