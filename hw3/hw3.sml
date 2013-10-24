@@ -2,14 +2,6 @@
 
 exception NoAnswer
 
-(**** for the challenge problem only ****)
-
-datatype typ = Anything
-	     | UnitT
-	     | IntT
-	     | TupleT of typ list
-	     | Datatype of string
-
 (**** you can put all your code here ****)
 
 fun only_capitals (strings : string list) = (*can just write 'strings' without typing*)
@@ -107,6 +99,15 @@ fun check_pat pattern =
 	      | ConstructorP (_,p) => concat_variables p
 	      | _ => []
 
+	(* this may also work *)
+	(*fun concat_variables pattern =
+	    case pattern
+             of Variable s => [s]
+              | TupleP ps => List.concat (map concat_variables ps)
+              | ConstructorP (_, p) => get_variables p
+              | _ => []
+	 *)
+
         fun check_var_dup var_list =
             case var_list of
                 [] => true
@@ -130,10 +131,43 @@ fun first_match v pattern_list =
     SOME (first_answer (fn p => match (v, p)) pattern_list)
     handle NoAnswer => NONE
 
-(*
-fun typecheck_patterns (constructor_list, pattern_list) =
-*)
+(**** for the challenge problem only ****)
 
+datatype typ = Anything
+	     | UnitT
+	     | IntT
+	     | TupleT of typ list
+	     | Datatype of string
+
+fun typ_conversion pattern = 
+    case pattern of
+	Wildcard => Anything
+      | TupleP ps => TupleT (List.map typ_conversion ps)
+      | UnitP => UnitT
+      | ConstP cp => IntT
+      | Variable v => Datatype v
+      | ConstructorP (_, p) => typ_conversion p
+
+(*finding the most lenient type*)
+fun typ_compare (typ1,typ2) = 
+    case (typ1, typ2) of
+	(TupleT typs1, TupleT typs2) => if List.length (typs1) = List.length (typs2) then TupleT (List.map typ_compare (ListPair.zip (typs1, typs2))) else Anything 
+      | (TupleT typs, Anything) => TupleT typs
+      | (Anything, TupleT typs) => TupleT typs
+      | (UnitT, UnitT) => UnitT
+      | (IntT, IntT) => IntT
+      | (Datatype typ1_name, Datatype typ2_name) => if (typ1_name = typ2_name) then Datatype typ1_name else Anything
+      | (_,_) => Anything
+
+fun typecheck_patterns (constructor_list, pattern_list) =
+    let fun find_lenient_typ f (cur_pattern_list, acc) =
+            case cur_pattern_list of
+		[] => SOME acc  (*acc = most_lenient_typ*)
+              | cur_pattern::rest_pattern => find_lenient_typ f (rest_pattern, f (typ_conversion (cur_pattern), acc))
+    in
+	find_lenient_typ typ_compare (pattern_list, typ_conversion (hd pattern_list))
+    end
+	
 
 (*
 val t_only_capitals = only_capitals ["A","B","C"]
@@ -165,13 +199,40 @@ val t_all_answers4 = all_answers (fn x => if x = 1 then SOME [x] else NONE) [1,2
 val t_all_answers5 = all_answers (fn x => if x = 1 then SOME [x] else NONE) [1,1,1,1]
 val t_count_wildcards = count_wildcards Wildcard
 val t_count_wildcards2 = count_wildcards (Variable ("aaa"))
-val t_count_wild_and_variable_lengths  = count_wild_and_variable_lengths (Variable("a"))
-val t_count_wild_and_variable_lengths2  = count_wild_and_variable_lengths (Variable("bbb"))
-val t_count_wild_and_variable_lengths3  = count_wild_and_variable_lengths (Variable("ZZZsd"))
+val t_count_wildcards3 = count_wildcards (TupleP [Variable "aaa", Wildcard, Variable "bbb", Wildcard])
+val t_count_wildcards4 = count_wildcards (ConstructorP ("aaa", TupleP [Wildcard, Variable "bbb"]))
+val t_count_wild_and_variable_lengths = count_wild_and_variable_lengths (Variable("a"))
+val t_count_wild_and_variable_lengths2 = count_wild_and_variable_lengths (Variable("bbb"))
+val t_count_wild_and_variable_lengths3 = count_wild_and_variable_lengths (Variable("ZZZsd"))
+val t_count_wild_and_variable_lengths4 = count_wild_and_variable_lengths Wildcard
+val t_count_wild_and_variable_lengths5 = count_wild_and_variable_lengths (ConstructorP("blah", TupleP[Wildcard, Variable("ZZZsd")]))
+val t_count_wild_and_variable_lengths6 = count_wild_and_variable_lengths UnitP
 val t_count_some_var = count_some_var ("x", Variable("x"))
 val t_count_some_var2 = count_some_var ("x", Variable("wzzze"))
+val t_count_some_var3 = count_some_var("x", Wildcard)
+val t_count_some_var4 = count_some_var("x", UnitP)
+val t_count_some_var5 = count_some_var("x", TupleP[Wildcard, Variable "x", Variable "x"])
+val t_count_some_var6 = count_some_var("x", ConstructorP("x", TupleP[Wildcard, Variable "x", TupleP[Variable "x", Variable "woz"]]))
+val t_check_pat = check_pat (Variable("x"))
+val t_check_pat2 = check_pat (TupleP[Wildcard, Variable "x", ConstructorP("x", Variable "y")])
+val t_check_pat3 = check_pat (TupleP[Wildcard, Variable "x", ConstructorP("y", Variable "x")])
+val t_check_pat4 = check_pat (TupleP[Wildcard, Wildcard, UnitP, ConstP 11])
+val t_match = match (Const(1), UnitP)
+val t_match2 = match(Tuple [Const 1, Unit, Constructor ("boo", Const 19)], Wildcard)
+val t_match3 = match (Const 88, ConstP 88)
+val t_match4 = match (Unit, UnitP)
+val t_match5 = match (Constructor ("c", Const 13), ConstructorP("c", Variable "b"));  (*SOME [("b", Const 13)]*)
+val t_match6 = match (Tuple [Const 13, Const 17], TupleP [Variable "uno", Variable "dos"]); (*SOME [("uno", Const 13), ("dos", Const 17)]*)
+val t_first_match = first_match Unit [UnitP]
+val t_first_match2 = first_match (Const 1) [ConstP 1]
+val t_first_match3 = first_match (Const 1) [ConstP 11]
+val t_first_match4 = first_match (Const 22) [ConstP 2, Variable "x", Variable "w", ConstP 22]
 *)
 
-val t_check_pat = check_pat (Variable("x"))
-val t_match = match (Const(1), UnitP)
-val t_first_match = first_match Unit [UnitP]
+val t_typ_conversion = typ_conversion Wildcard
+val t_typ_conversion2 = typ_conversion (Variable "dummy")
+val t_typ_conversion3 = typ_conversion (TupleP [Wildcard, Variable "dummy", UnitP, ConstP 16])
+val t_typ_conversion3 = typ_conversion (TupleP [Wildcard, TupleP [Wildcard, Wildcard]])
+val t_typecheck_patterns = typecheck_patterns ([], [TupleP [Variable("x"), Variable("y")], TupleP [Wildcard, Wildcard]])
+val t_typecheck_patterns2 = typecheck_patterns ([], [TupleP [Wildcard,Wildcard], TupleP[Wildcard,TupleP[Wildcard,Wildcard]]])
+
